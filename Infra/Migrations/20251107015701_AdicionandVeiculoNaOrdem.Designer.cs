@@ -3,6 +3,7 @@ using System;
 using Infra.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infra.Migrations
 {
     [DbContext(typeof(AnalyzerDbContext))]
-    partial class AnalyzerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251107015701_AdicionandVeiculoNaOrdem")]
+    partial class AdicionandVeiculoNaOrdem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,7 +42,7 @@ namespace Infra.Migrations
                     b.Property<int>("nCdSeguradora")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("nCdVeiculo")
+                    b.Property<int>("nCdVeiculo")
                         .HasColumnType("integer");
 
                     b.Property<string>("sDsObservacao")
@@ -221,7 +224,9 @@ namespace Infra.Migrations
 
                     b.HasOne("Domain.Entities.CWVeiculo", "Veiculo")
                         .WithMany()
-                        .HasForeignKey("nCdVeiculo");
+                        .HasForeignKey("nCdVeiculo")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Prestador");
 

@@ -21,6 +21,7 @@ namespace Infra.Repositories
             return await _context.OrdemServico
                 .Include(o => o.Prestador)
                 .Include(o => o.Seguradora)
+                .Include(o => o.Veiculo)
                 .Include(o => o.Itens)
                     .ThenInclude(i => i.Peca)
                 .ToListAsync();
@@ -30,12 +31,17 @@ namespace Infra.Repositories
             return await _context.OrdemServico
                 .Include(o => o.Prestador)
                 .Include(o => o.Seguradora)
+                .Include(o => o.Veiculo)
                 .Include(o => o.Itens)
                     .ThenInclude(i => i.Peca)
                 .FirstOrDefaultAsync(o => o.nCdOrdemServico == id) ?? new CWOrdemServico();
         }
         public async Task Adicionar(CWOrdemServico cWOrdemServico)
         {
+
+            cWOrdemServico.Prestador = await _context.ParceiroNegocios.FindAsync(cWOrdemServico.nCdPrestador) ?? new();
+            cWOrdemServico.Seguradora = await _context.ParceiroNegocios.FindAsync(cWOrdemServico.nCdSeguradora) ?? new();
+
             _context.Entry(cWOrdemServico.Prestador).State = EntityState.Unchanged;
             _context.Entry(cWOrdemServico.Seguradora).State = EntityState.Unchanged;
 

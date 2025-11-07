@@ -50,6 +50,7 @@ namespace Bussiness.Services
                 tDtRetorno = dto.DataRetorno,
                 nCdPrestador = dto.CodigoPrestador,
                 nCdSeguradora = dto.CodigoSeguradora,
+                nCdVeiculo = dto.CodigoVeiculo,
                 sDsObservacao = dto.Observacao,
                 dVlTotal = dto.ValorTotal,
                 Itens = dto.Itens?.Select(MapearCWItem).ToList() ?? new List<CWOrdemServicoItem>()
@@ -96,7 +97,17 @@ namespace Bussiness.Services
                     Ativo = cw.Seguradora.bFlAtivo,
                     Tipo = (int)cw.Seguradora.eTipo
                 } : null,
-                CodigoVeiculo = cw.Prestador?.nCdParceiro ?? 0,
+                CodigoVeiculo = cw.Veiculo.nCdVeiculo,
+                Veiculo = cw.Veiculo != null ? new DTOVeiculoResponse
+                {
+                    Codigo = cw.Veiculo.nCdVeiculo,
+                    Nome = cw.Veiculo.sNmVeiculo,
+                    Ano = cw.Veiculo.tDtAno,
+                    Cor = cw.Veiculo.sCor,
+                    Mecanico = cw.Veiculo.sMecanico,
+                    Placa = cw.Veiculo.sPlaca,
+                    Tipo = cw.Veiculo.sTipo
+                } : null,
                 Observacao = cw.sDsObservacao,
                 ValorTotal = cw.dVlTotal,
                 Itens = cw.Itens?.Select(MapearDTOItem).ToList() ?? new List<DTOOrdemServicoItemResponse>()

@@ -22,6 +22,10 @@ namespace Domain.Entities
         [ForeignKey(nameof(Seguradora))]
         public int nCdSeguradora { get; set; }
         public CWParceiroNegocio Seguradora { get; set; }
+
+        [ForeignKey(nameof(Veiculo))]
+        public int? nCdVeiculo { get; set; }
+        public CWVeiculo Veiculo { get; set; }
         public string sDsObservacao { get; set; }
         public double dVlTotal { get; set; }
         public ICollection<CWOrdemServicoItem> Itens { get; set; } = new List<CWOrdemServicoItem>();

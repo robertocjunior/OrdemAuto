@@ -3,9 +3,9 @@ import { AgGridReact } from 'ag-grid-react';
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import '../../styles/ag-custom.css';
-
 import { ModuleRegistry } from 'ag-grid-community';
 import { MasterDetailModule } from 'ag-grid-enterprise';
+import StatusBadge from './StatusBadge';
 
 // Registrar módulo do MasterDetail
 ModuleRegistry.registerModules([MasterDetailModule]);
@@ -63,7 +63,13 @@ const OrdemTable = ({ ordens, loading, setSelected }) => {
                 })
         },
 
-        { headerName: "Status", field: "status", width: 150 }
+        {
+            headerName: "Status",
+            field: "status",
+            width: 150,
+            cellRenderer: (params) => <StatusBadge value={params.value} />
+        }
+
     ], []);
 
 

@@ -32,6 +32,21 @@ const OrdemFormulario = ({ onSubmit, onCancel, ordem, cadastros }) => {
         }
     });
 
+    const toggleStatusItem = (index) => {
+        setItens(prev =>
+            prev.map((item, i) =>
+                i === index
+                    ? {
+                        ...item,
+                        status: item.status === "EmAndamento"
+                            ? "Concluido"
+                            : "EmAndamento"
+                    }
+                    : item
+            )
+        );
+    };
+
     // Quando editar ordem
     useEffect(() => {
         if (ordem) {
@@ -270,7 +285,7 @@ const OrdemFormulario = ({ onSubmit, onCancel, ordem, cadastros }) => {
             <Collapse in={itemForm.usarNovaPeca}>
                 <div className="p-3 border rounded mt-3">
                     <Form.Group className="mb-3">
-                        <Form.Label>Modelo da peça</Form.Label>
+                        <Form.Label>Peça</Form.Label>
                         <Form.Control
                             type="text"
                             name="novaPeca.modelo"
@@ -358,11 +373,24 @@ const OrdemFormulario = ({ onSubmit, onCancel, ordem, cadastros }) => {
                                 <td>{i.descricaoReparo}</td>
                                 <td>R$ {i.valorEstimado}</td>
                                 <td>R$ {i.valorReal}</td>
-                                <td>
-                                    <Button size="sm" variant="danger" onClick={() => removerItem(idx)}>
+                                <td className="d-flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        variant={i.status === "EmAndamento" ? "warning" : "success"}
+                                        onClick={() => toggleStatusItem(idx)}
+                                    >
+                                        {i.status === "EmAndamento" ? "Em andamento" : "Concluído"}
+                                    </Button>
+
+                                    <Button
+                                        size="sm"
+                                        variant="danger"
+                                        onClick={() => removerItem(idx)}
+                                    >
                                         Remover
                                     </Button>
                                 </td>
+
                             </tr>
                         ))}
                     </tbody>

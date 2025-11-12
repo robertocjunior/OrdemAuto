@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Infra.Contexts;
 using System.Linq;
 
-namespace Infra.Repositories
+namespace Infra.Repository
 {
     public class OrdemServicoRepository : IOrdemServicoRepository
     {

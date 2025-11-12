@@ -7,7 +7,7 @@ using Infra.Contexts;
 using System;
 using Microsoft.VisualBasic;
 
-namespace Infra.Repositories
+namespace Infra.Repository
 {
     public class ParceiroRepository : IParceiroRepository
     {

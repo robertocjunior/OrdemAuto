@@ -41,7 +41,12 @@ namespace Invoicing.Controllers
             await _cadastroService.EditarPecas(dto);
             return Ok();
         }
-
+        [HttpGet("veiculos/PesquisarVeiculos")]
+        public async Task<ActionResult> PesquisarVeiculos()
+        {
+            var result = await _cadastroService.PesquisarVeiculos();
+            return Ok(result);
+        }
         [HttpGet("veiculos/{id}")]
         public async Task<ActionResult> ConsultarVeiculo(int id)
         {

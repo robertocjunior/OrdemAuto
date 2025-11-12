@@ -5,6 +5,7 @@ using Domain.Enums;
 using StockService.Domain.Utility;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Collections.Generic;
 namespace Bussiness.Services
 {
     public class CadastroService : ICadastroService
@@ -22,6 +23,10 @@ namespace Bussiness.Services
             DTOPecasResponse DTOPecasResponse = new DTOPecasResponse();
             DTOPecasResponse = MapearDTO(await _repository.ConsultarPecas(id));
             return DTOPecasResponse;
+        }
+        public async Task<List<DTOVeiculoResponse>> PesquisarVeiculos()
+        {
+            return MapearDTOVeiculos(await _repository.PesquisarVeiculos());
         }
         public async Task<DTOConsultarTodos> ConsultarTodos()
         {
@@ -105,7 +110,7 @@ namespace Bussiness.Services
             return new CWVeiculo()
             {
                 nCdVeiculo = dto.Codigo,
-                sMecanico = dto.Nome,
+                sMecanico = dto.Mecanico,
                 sCor = dto.Cor,
                 sPlaca = dto.Placa,
                 sNmVeiculo = dto.Nome,

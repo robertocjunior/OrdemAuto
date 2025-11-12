@@ -24,14 +24,14 @@ export default {
                 editar: "/pecas/editar"         
             }
         },
-
-        veiculos: {
-            baseURL: `${baseApiUrl}/Cadastro`,
-            endpoints: {
-                consultar: "/veiculos",           // GET /Cadastro/veiculos/{id}
-                adicionar: "/veiculos/adicionar", // POST
-                editar: "/veiculos/editar"        // PUT
-            }
+    },
+    veiculo: {
+        baseURL: `${baseApiUrl}/Cadastro`,
+        endpoints: {
+            pesquisar: "/veiculos/PesquisarVeiculos",           // GET /Cadastro/veiculos/{id}
+            consultar: "/veiculos",           // GET /Cadastro/veiculos/{id}
+            adicionar: "/veiculos/adicionar", // POST
+            editar: "/veiculos/editar"        // PUT
         }
     }
 

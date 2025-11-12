@@ -7,7 +7,8 @@ namespace Domain.Interfaces
     {
         Task<DTOPecasResponse> ConsultarPecas(int id);
         Task<DTOConsultarTodos> ConsultarTodos();
-        Task AdicionarPecas(DTOPecasResponse dtoParceiro);
+        Task<List<DTOVeiculoResponse>> PesquisarVeiculos();
+        Task AdicionarPecas(DTOPecasResponse PesquisarVeiculosdtoParceiro);
         Task EditarPecas(DTOPecasResponse dtoParceiro);
         Task<DTOVeiculoResponse> ConsultarVeiculo(int id);
         Task AdicionarVeiculo(DTOVeiculoResponse dTOVeiculo);

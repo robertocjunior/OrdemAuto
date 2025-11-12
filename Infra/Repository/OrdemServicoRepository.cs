@@ -63,6 +63,7 @@ namespace Infra.Repositories
             ordemExistente.sDsOrdem = cwOrdemServico.sDsOrdem;
             ordemExistente.tDtOrdem = cwOrdemServico.tDtOrdem;
             ordemExistente.tDtRetorno = cwOrdemServico.tDtRetorno;
+            ordemExistente.nCdVeiculo = cwOrdemServico.nCdVeiculo;
             ordemExistente.nCdPrestador = cwOrdemServico.nCdPrestador;
             ordemExistente.nCdSeguradora = cwOrdemServico.nCdSeguradora;
             ordemExistente.sDsObservacao = cwOrdemServico.sDsObservacao;

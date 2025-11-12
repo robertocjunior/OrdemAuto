@@ -5,6 +5,7 @@ const Sidebar = () => {
     const navItems = [
         { path: "/dashboard", icon: "fa-home", text: "Dashboard" },
         { path: "/ordem", icon: "fa-file-invoice", text: "Ordem de Serviço" },
+        { path: "/veiculos", icon: "fa-file-invoice", text: "Veículos" },
     ];
 
     return (

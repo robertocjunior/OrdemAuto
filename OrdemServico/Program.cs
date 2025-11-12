@@ -1,25 +1,26 @@
 using Bussiness.Services;
 using Domain.Interfaces;
 using Infra.Contexts;
-using Infra.Repository;  // Namespace corrigido
+using Infra.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CORS
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+// ==================================================================
+// 1. CONFIGURAÇÃO CORS MELHORADA
+// ==================================================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy =>
-                      {
-                          policy.WithOrigins("http://localhost:3000")
-                                .AllowAnyHeader()
-                                .AllowAnyMethod();
-                      });
+    options.AddPolicy("AllowAll",
+        policy =>
+        {
+            policy.AllowAnyOrigin()  // Permite qualquer origem (em desenvolvimento)
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
 });
 
-// Services
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -39,7 +40,13 @@ builder.Services.AddDbContext<AnalyzerDbContext>(options =>
 
 var app = builder.Build();
 
-// Pipeline
+// ==================================================================
+// 2. CONFIGURAÇÃO DO PIPELINE
+// ==================================================================
+
+// CORS DEVE VIR ANTES DE OUTROS MIDDLEWARES
+app.UseCors("AllowAll");
+
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
@@ -47,7 +54,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 
 app.UseHttpsRedirection();
-app.UseCors(MyAllowSpecificOrigins);
 app.UseAuthorization();
 app.MapControllers();
 

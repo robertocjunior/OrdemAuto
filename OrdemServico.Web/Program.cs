@@ -9,22 +9,19 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
-//app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
+// app.UseHttpsRedirection(); // Mantenha comentado
+app.UseStaticFiles(); 
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapRazorPages();
 
-// Mapeia qualquer rota não encontrada para o 'index.html'
-// Isso permite que a aplicação React (SPA) controle o roteamento.
+// --- GARANTA QUE ESTA LINHA ESTÁ AQUI ---
 app.MapFallbackToFile("index.html");
+// --- FIM DA ADIÇÃO ---
 
 app.Run();

@@ -1,57 +1,56 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  # Serviço do Banco de Dados PostgreSQL
+  # ==============================
+  # 📦 Banco de Dados
+  # ==============================
   db:
     image: postgres:16
     container_name: ordemauto-db
     restart: always
-    ports:
-      - "5432:5432" # Exponha se precisar acessar o DB de fora
     environment:
-      POSTGRES_DB: ordemauto_db
-      POSTGRES_USER: ordemuser
-      POSTGRES_PASSWORD: SuaSenhaForteAqui! # <- MUDE ISSO
+      POSTGRES_DB: ORDEM_AUTO
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ordemuser -d ordemauto_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
 
-  # Serviço da API Backend (OrdemServico)
+  # ==============================
+  # ⚙️ API (.NET)
+  # ==============================
   api:
-    container_name: ordemauto-api
     build:
       context: .
       dockerfile: OrdemServico/Dockerfile
-    restart: always
-    ports:
-      - "8080:8080" # Host:Container
-    environment:
-      ASPNETCORE_URLS: "http://+:8080"
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=ordemauto_db;Username=ordemuser;Password=SuaSenhaForteAqui!" # <- MUDE ISSO
+    container_name: ordemauto-api
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=ORDEM_AUTO;Username=postgres;Password=1234"
+    ports:
+      - "5084:8080"
+    restart: always
 
-  # Serviço do Frontend Web (OrdemServico.Web com React)
+  # ==============================
+  # 🌐 WEB (.NET + React)
+  # ==============================
   web:
-    container_name: ordemauto-web
     build:
       context: .
       dockerfile: OrdemServico.Web/Dockerfile
-    restart: always
-    ports:
-      - "80:8080" # Roda na porta 80 do seu VPS
-    environment:
-      ASPNETCORE_URLS: "http://+:8080"
-      # Se o seu ReactApp precisa saber a URL da API:
-      # REACT_APP_API_URL: "http://<SEU_IP_DA_VPS>:8080" 
+    container_name: ordemauto-web
     depends_on:
       - api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Faz o front usar a API interna do docker
+      REACT_APP_API_BASE_URL: "http://api:8080/api"
+    ports:
+      - "80:8080"
+    restart: always
 
 volumes:
-  postgres_data:
-    driver: local
+  pgdata:

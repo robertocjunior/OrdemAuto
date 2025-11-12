@@ -1,33 +1,52 @@
-# Estágio 1: Build (precisa do SDK completo para buildar o React)
+# ===============================
+# 🏗️ STAGE 1: Build do Front-End (React)
+# ===============================
+FROM node:20 AS frontend-build
+WORKDIR /src
+
+# Copia apenas os arquivos necessários para o npm install primeiro (cache eficiente)
+COPY OrdemServico.Web/ClientApp/package*.json ./ClientApp/
+WORKDIR /src/ClientApp
+RUN npm install
+
+# Copia o resto e roda o build do React
+COPY OrdemServico.Web/ClientApp ./ 
+RUN npm run build --omit=dev
+RUN cp -r build /src/wwwroot
+
+# ===============================
+# ⚙️ STAGE 2: Build do Back-End (.NET)
+# ===============================
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Restaura dependências do .NET
+# Copia arquivos de projeto e restaura dependências
 COPY OrdemServico.sln .
-COPY OrdemServico/OrdemServico.csproj OrdemServico/
-COPY OrdemServico.Web/OrdemServico.Web.csproj OrdemServico.Web/
 COPY Bussiness/Bussiness.csproj Bussiness/
 COPY Domain/Domain.csproj Domain/
 COPY Infra/Infra.csproj Infra/
-# Copia o package.json para otimizar o cache do npm
-COPY OrdemServico.Web/ClientApp/package.json OrdemServico.Web/ClientApp/
+COPY OrdemServico/OrdemServico.csproj OrdemServico/
+COPY OrdemServico.Web/OrdemServico.Web.csproj OrdemServico.Web/
 RUN dotnet restore OrdemServico.sln
 
-# Copia o resto do código
+# Copia o resto do código e publica
 COPY . .
+WORKDIR /src/OrdemServico.Web
+RUN dotnet publish -c Release -o /app/publish
 
-# Publica o projeto Web
-# O 'dotnet publish' para projetos com React automaticamente
-# roda o 'npm install' e 'npm run build'
-WORKDIR "/src/OrdemServico.Web"
-RUN dotnet publish "OrdemServico.Web.csproj" -c Release -o /app/publish
-
-# Estágio 2: Imagem Final
+# ===============================
+# 🚀 STAGE 3: Runtime
+# ===============================
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
+
+# Copia publicação do .NET
 COPY --from=build /app/publish .
 
-# Adiciona usuário não-root
+# Copia build do React para o wwwroot da aplicação ASP.NET
+COPY --from=frontend-build /src/ClientApp/build ./wwwroot
+
+# Segurança: usa usuário sem privilégios
 RUN useradd -m -s /bin/bash appuser
 USER appuser
 

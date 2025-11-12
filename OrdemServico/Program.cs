@@ -7,21 +7,16 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // ==================================================================
-// 1. CONFIGURAÇÃO CORS MAIS ESPECÍFICA
+// 1. CONFIGURAÇÃO CORS MELHORADA
 // ==================================================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
+    options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.WithOrigins(
-                    "http://localhost:3000",
-                    "http://localhost:80", 
-                    "http://localhost"
-                )
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
         });
 });
 
@@ -46,7 +41,7 @@ builder.Services.AddDbContext<AnalyzerDbContext>(options =>
 var app = builder.Build();
 
 // ==================================================================
-// 2. APLICAR MIGRAÇÕES
+// 2. APLICAR MIGRAÇÕES DO BANCO DE DADOS
 // ==================================================================
 using (var scope = app.Services.CreateScope())
 {
@@ -54,7 +49,7 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<AnalyzerDbContext>();
-        context.Database.Migrate();
+        context.Database.Migrate(); // Isso aplica as migrações automaticamente
         Console.WriteLine("Migrações do banco de dados aplicadas com sucesso!");
     }
     catch (Exception ex)
@@ -64,20 +59,19 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ==================================================================
-// 3. CONFIGURAÇÃO DO PIPELINE - CORS PRIMEIRO!
+// 3. CONFIGURAÇÃO DO PIPELINE
 // ==================================================================
 
-// CORS DEVE SER O PRIMEIRO MIDDLEWARE
-app.UseCors("AllowFrontend");
+// CORS DEVE VIR ANTES DE OUTROS MIDDLEWARES
+app.UseCors("AllowAll");
 
-// Swagger
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection(); // Mantenha comentado por enquanto
+app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

@@ -1,9 +1,9 @@
 using Bussiness.Services;
 using Domain.Interfaces;
 using Infra.Contexts;
-using Infra.Repository;
+using Infra.Repository; // Correção do namespace (era 'Repositories')
 using Microsoft.EntityFrameworkCore;
-using OrdemServico.Utils;
+using OrdemServico.Utils; // Correção do namespace (era 'Invoicing')
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,9 +16,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy =>
                       {
-                          policy.WithOrigins("http://localhost", // A porta 80 (do docker-compose web)
-                                             "http://localhost:80", 
-                                             "http://localhost:3000") // Porta padrão do React (para dev local)
+                          policy.WithOrigins("http://localhost",
+                                             "http://localhost:80",
+                                             "http://localhost:3000") 
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
                       });
@@ -52,7 +52,7 @@ builder.Services.AddDbContext<AnalyzerDbContext>(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) // Permitir swagger em prod
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
 {
     app.UseSwagger();
     app.UseSwaggerUI();

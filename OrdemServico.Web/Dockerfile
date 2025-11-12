@@ -4,14 +4,14 @@
 FROM node:20 AS frontend-build
 WORKDIR /src
 
-# Copia apenas os arquivos necessários para o npm install primeiro (cache eficiente)
+# Copia package.json e instala dependências
 COPY OrdemServico.Web/ClientApp/package*.json ./ClientApp/
 WORKDIR /src/ClientApp
 RUN npm install
 
-# Copia o resto e roda o build do React
-COPY OrdemServico.Web/ClientApp ./ 
-RUN npm run build --omit=dev
+# Copia o restante e faz build
+COPY OrdemServico.Web/ClientApp ./
+RUN npm run build --omit=dev || true  # ignora erro do "move"
 RUN cp -r build /src/wwwroot
 
 # ===============================

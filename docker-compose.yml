@@ -1,55 +1,44 @@
-version: "3.9"
-
 services:
-  # ==============================
-  # 📦 Banco de Dados
-  # ==============================
   db:
-    image: postgres:16
-    container_name: ordemauto-db
-    restart: always
+    image: postgres:15
     environment:
-      POSTGRES_DB: ORDEM_AUTO
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 1234
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      - POSTGRES_DB=ORDEM_AUTO
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=1234
     ports:
       - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ORDEM_AUTO"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  # ==============================
-  # ⚙️ API (.NET)
-  # ==============================
   api:
     build:
-      context: . # <-- CORREÇÃO: Usar o contexto local
+      context: .
       dockerfile: OrdemServico/Dockerfile
-    container_name: ordemauto-api
-    depends_on:
-      - db
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=ORDEM_AUTO;Username=postgres;Password=1234"
     ports:
       - "5084:8080"
-    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=ORDEM_AUTO;Username=postgres;Password=1234
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: on-failure
 
-  # ==============================
-  # 🌐 WEB (.NET + React)
-  # ==============================
   web:
     build:
-      context: . # <-- CORREÇÃO: Usar o contexto local
+      context: .
       dockerfile: OrdemServico.Web/Dockerfile
-    container_name: ordemauto-web
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_BASE_URL=http://localhost:5084/api
     depends_on:
       - api
-    environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      REACT_APP_API_BASE_URL: "http://localhost:5084/api" # URL pública
-    ports:
-      - "80:8080"
-    restart: always
 
 volumes:
-  pgdata:
+  postgres_data:

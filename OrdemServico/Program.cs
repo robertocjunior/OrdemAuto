@@ -1,92 +1,74 @@
 using Bussiness.Services;
 using Domain.Interfaces;
 using Infra.Contexts;
-using Infra.Repositories;
+using Infra.Repository;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using OrdemServico.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddDbContext<AnalyzerDbContext>(options =>
-    options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
-    )
-);
 
-
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Invoice Service", Version = "v1" });
-});
-
-builder.Services.AddHttpClient("StockService", client =>
-{
-    client.BaseAddress = new Uri("https://localhost:7063");
-})
-.ConfigurePrimaryHttpMessageHandler(() =>
-{
-    return new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-    };
-});
-
-builder.Services.AddScoped<IParceiroRepository, ParceiroRepository>();
-builder.Services.AddScoped<IParceiroService, ParceiroService>();
-builder.Services.AddScoped<ICadastroRepository, CadastroRepository>();
-builder.Services.AddScoped<ICadastroService, CadastroService>();
-builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
-builder.Services.AddScoped<IOrdemServicoService, OrdemServicoService>();
-
+// ==================================================================
+// 1. DEFINIR A POLÍTICA DE CORS
+// ==================================================================
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("http://localhost", // A porta 80 (do docker-compose web)
+                                             "http://localhost:80", 
+                                             "http://localhost:3000") // Porta padrão do React (para dev local)
+                                .AllowAnyHeader()
+                                .AllowAnyMethod();
+                      });
+});
+// ==================================================================
+
+
+// Add services to the container.
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(typeof(ResponseUtility));
 });
 
-builder.Services.AddControllers();
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// INJEO DE DEPENDENCIA
+builder.Services.AddScoped<IOrdemServicoService, OrdemServicoService>();
+builder.Services.AddScoped<IOrdemServicoRepository, OrdemServicoRepository>();
+builder.Services.AddScoped<ICadastroService, CadastroService>();
+builder.Services.AddScoped<ICadastroRepository, CadastroRepository>();
+builder.Services.AddScoped<IParceiroService, ParceiroService>();
+builder.Services.AddScoped<IParceiroRepository, ParceiroRepository>();
+
+// BANCO DE DADOS
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddDbContext<AnalyzerDbContext>(options =>
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        // Pede o DbContext ao provedor de serviços
-        // ATENÇÃO: Use o nome exato do seu DbContext aqui
-        var context = services.GetRequiredService<Infra.Contexts.AnalyzerDbContext>();
-        
-        // Aplica as migrações pendentes.
-        // O banco de dados será criado se não existir.
-        context.Database.Migrate();
-    }
-    catch (Exception ex)
-    {
-        // Se a migração falhar, logue o erro
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocorreu um erro ao aplicar as migrações do banco de dados.");
-        // Você pode decidir se quer parar a aplicação se a migração falhar
-        // throw;
-    }
-}
-
-if (app.Environment.IsDevelopment())
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) // Permitir swagger em prod
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
+app.UseHttpsRedirection();
 
-app.UseCors("AllowAll");    
+// ==================================================================
+// 2. USAR A POLÍTICA DE CORS
+// ==================================================================
+app.UseCors(MyAllowSpecificOrigins);
+// ==================================================================
+
 
 app.UseAuthorization();
+
 app.MapControllers();
+
 app.Run();

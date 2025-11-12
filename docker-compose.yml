@@ -31,7 +31,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=ORDEM_AUTO;Username=postgres;Password=1234"
     ports:
-      - "5084:8080"
+      - "5084:8080" # <-- A API está exposta publicamente na porta 5084
     restart: always
 
   # ==============================
@@ -46,8 +46,10 @@ services:
       - api
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      # Faz o front usar a API interna do docker
-      REACT_APP_API_BASE_URL: "http://api:8080/api"
+      # CORREÇÃO:
+      # Aponte para a URL pública (host) da API,
+      # pois é o navegador do usuário que fará esta chamada.
+      REACT_APP_API_BASE_URL: "http://localhost:5084/api" 
     ports:
       - "80:8080"
     restart: always

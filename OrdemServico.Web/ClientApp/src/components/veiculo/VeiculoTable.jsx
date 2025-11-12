@@ -16,8 +16,8 @@ const VeiculoTable = ({ veiculos, loading, setSelected }) => {
             width: 50,
             pinned: 'left',
             suppressMenu: true,
-            suppressSorting: true,
-            suppressFilter: true
+            sortable: false, // Correção
+            filter: false     // Correção
         },
 
         {
@@ -71,7 +71,7 @@ const VeiculoTable = ({ veiculos, loading, setSelected }) => {
         if (gridApi && veiculos?.length) {
             gridApi.sizeColumnsToFit();
         }
-        console.log(veiculos);
+        // console.log(veiculos); // Removido ou comentado para limpar o console
     }, [gridApi, veiculos]);
 
     return (

@@ -15,7 +15,17 @@ const OrdemTable = ({ ordens, loading, setSelected }) => {
 
     // COLUNAS DO GRID PRINCIPAL - adaptadas pro DTOOrdemServicoResponse
     const mainColumns = useMemo(() => [
-        { headerCheckboxSelection: true, checkboxSelection: true, headerName: "", field: "checkbox", width: 50, pinned: 'left', suppressMenu: true, suppressSorting: true, suppressFilter: true },
+        { 
+            headerCheckboxSelection: true, 
+            checkboxSelection: true, 
+            headerName: "", 
+            field: "checkbox", 
+            width: 50, 
+            pinned: 'left', 
+            suppressMenu: true, 
+            sortable: false, // Correção
+            filter: false    // Correção
+        },
 
         { headerName: "#", field: "codigo", cellRenderer: "agGroupCellRenderer", width: 90 },
 
@@ -43,7 +53,6 @@ const OrdemTable = ({ ordens, loading, setSelected }) => {
         }
     ], []);
 
-    // COLUNAS DO SUBGRID (Itens da Ordem)
     // COLUNAS DO SUBGRID (Itens da Ordem)
     const detailColumns = useMemo(() => [
         { headerName: "Cod. Peça", field: "codigo", width: 120 },
@@ -91,7 +100,7 @@ const OrdemTable = ({ ordens, loading, setSelected }) => {
     }), [detailColumns]);
 
     useEffect(() => {
-        if (gridApi && ordens.length) {
+        if (gridApi && ordens?.length) {
             gridApi.sizeColumnsToFit();
         }
     }, [gridApi, ordens]);

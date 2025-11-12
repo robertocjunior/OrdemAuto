@@ -13,7 +13,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
@@ -21,5 +22,9 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Mapeia qualquer rota não encontrada para o 'index.html'
+// Isso permite que a aplicação React (SPA) controle o roteamento.
+app.MapFallbackToFile("index.html");
 
 app.Run();

@@ -52,6 +52,29 @@ builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Pede o DbContext ao provedor de serviços
+        // ATENÇÃO: Use o nome exato do seu DbContext aqui
+        var context = services.GetRequiredService<Infra.Contexts.AnalyzerDbContext>();
+        
+        // Aplica as migrações pendentes.
+        // O banco de dados será criado se não existir.
+        context.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        // Se a migração falhar, logue o erro
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Ocorreu um erro ao aplicar as migrações do banco de dados.");
+        // Você pode decidir se quer parar a aplicação se a migração falhar
+        // throw;
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

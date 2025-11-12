@@ -6,17 +6,26 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// CORS
+// ==================================================================
+// 1. CONFIGURAÇÃO CORS MAIS ESPECÍFICA
+// ==================================================================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
+    options.AddPolicy("AllowFrontend",
+        policy =>
+        {
+            policy.WithOrigins(
+                    "http://localhost:3000",
+                    "http://localhost:80", 
+                    "http://localhost"
+                )
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        });
 });
 
+// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -29,59 +38,47 @@ builder.Services.AddScoped<ICadastroRepository, CadastroRepository>();
 builder.Services.AddScoped<IParceiroService, ParceiroService>();
 builder.Services.AddScoped<IParceiroRepository, ParceiroRepository>();
 
-// Database com retry policy
+// Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<AnalyzerDbContext>(options =>
-    options.UseNpgsql(connectionString, 
-        npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()));
+    options.UseNpgsql(connectionString));
 
 var app = builder.Build();
 
 // ==================================================================
-// MIGRAÇÕES COM TENTATIVAS MÚLTIPLAS
+// 2. APLICAR MIGRAÇÕES
 // ==================================================================
-await ApplyMigrationsWithRetry(app);
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AnalyzerDbContext>();
+        context.Database.Migrate();
+        Console.WriteLine("Migrações do banco de dados aplicadas com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+    }
+}
 
-app.UseCors("AllowAll");
-app.UseSwagger();
-app.UseSwaggerUI();
+// ==================================================================
+// 3. CONFIGURAÇÃO DO PIPELINE - CORS PRIMEIRO!
+// ==================================================================
+
+// CORS DEVE SER O PRIMEIRO MIDDLEWARE
+app.UseCors("AllowFrontend");
+
+// Swagger
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+// app.UseHttpsRedirection(); // Mantenha comentado por enquanto
 app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-async Task ApplyMigrationsWithRetry(WebApplication app)
-{
-    const int maxRetries = 5;
-    const int delayMs = 5000;
-    
-    for (int i = 0; i < maxRetries; i++)
-    {
-        using var scope = app.Services.CreateScope();
-        var services = scope.ServiceProvider;
-        
-        try
-        {
-            var context = services.GetRequiredService<AnalyzerDbContext>();
-            Console.WriteLine($"Tentativa {i + 1} de {maxRetries}: Aplicando migrações...");
-            
-            await context.Database.MigrateAsync();
-            Console.WriteLine("✅ Migrações aplicadas com sucesso!");
-            return;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"❌ Tentativa {i + 1} falhou: {ex.Message}");
-            
-            if (i < maxRetries - 1)
-            {
-                Console.WriteLine($"Aguardando {delayMs/1000} segundos antes da próxima tentativa...");
-                await Task.Delay(delayMs);
-            }
-            else
-            {
-                Console.WriteLine("⚠️  Não foi possível aplicar migrações. A API iniciará sem banco.");
-            }
-        }
-    }
-}

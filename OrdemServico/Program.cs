@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll",
         policy =>
         {
-            policy.AllowAnyOrigin()  // Permite qualquer origem (em desenvolvimento)
+            policy.AllowAnyOrigin()
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
@@ -41,7 +41,25 @@ builder.Services.AddDbContext<AnalyzerDbContext>(options =>
 var app = builder.Build();
 
 // ==================================================================
-// 2. CONFIGURAÇÃO DO PIPELINE
+// 2. APLICAR MIGRAÇÕES DO BANCO DE DADOS
+// ==================================================================
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<AnalyzerDbContext>();
+        context.Database.Migrate(); // Isso aplica as migrações automaticamente
+        Console.WriteLine("Migrações do banco de dados aplicadas com sucesso!");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro ao aplicar migrações: {ex.Message}");
+    }
+}
+
+// ==================================================================
+// 3. CONFIGURAÇÃO DO PIPELINE
 // ==================================================================
 
 // CORS DEVE VIR ANTES DE OUTROS MIDDLEWARES
